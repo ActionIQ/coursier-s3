@@ -76,7 +76,7 @@ class S3HandlerNotFactory extends URLStreamHandler {
       .orElse(readFromFile(Paths.get(Properties.userHome).resolve(".coursier")))
   }
 
-  private def readFromArtifactsProfile: Option[S3] = Try {
+  private lazy val readFromArtifactsProfile: Option[S3] = Try {
     val regionProv = new DefaultAwsRegionProviderChain()
     val credProv = new ProfileCredentialsProvider("artifacts")
 
@@ -86,7 +86,7 @@ class S3HandlerNotFactory extends URLStreamHandler {
     ))(awscala.Region(regionProv.getRegion))
   }.toOption
 
-  private def readfromAwsChain: Option[S3] = Try {
+  private lazy val readfromAwsChain: Option[S3] = Try {
     val regionProv = new DefaultAwsRegionProviderChain()
     val credProv = new DefaultAWSCredentialsProviderChain()
 
