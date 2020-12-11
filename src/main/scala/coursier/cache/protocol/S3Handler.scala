@@ -67,33 +67,44 @@ class S3HandlerNotFactory extends URLStreamHandler {
     }
   }
 
-  private def getClient: Option[S3] = {
-    readFromArtifactsProfile
+  private lazy val getClient: Option[S3] = {
+    val s3Client = readFromArtifactsProfile
       .orElse(readfromAwsChain)
       .orElse(readFromFile(Paths.get("").toAbsolutePath))
       .orElse(readFromFile(Paths.get(Properties.userHome)))
       .orElse(readFromFile(Paths.get(Properties.userHome).resolve(".sbt")))
       .orElse(readFromFile(Paths.get(Properties.userHome).resolve(".coursier")))
+
+    if (s3Client.isEmpty) {
+        println("No credentials found!")
+    }
+    s3Client
   }
 
-  private lazy val readFromArtifactsProfile: Option[S3] = Try {
+  private def readFromArtifactsProfile: Option[S3] = Try {
     val regionProv = new DefaultAwsRegionProviderChain()
     val credProv = new ProfileCredentialsProvider("artifacts")
 
-    S3(Credentials(
+    val creds = S3(Credentials(
       credProv.getCredentials.getAWSAccessKeyId,
       credProv.getCredentials.getAWSSecretKey
     ))(awscala.Region(regionProv.getRegion))
+
+    println("Found creds from 'artifacts' profile")
+    creds
   }.toOption
 
-  private lazy val readfromAwsChain: Option[S3] = Try {
+  private def readfromAwsChain: Option[S3] = Try {
     val regionProv = new DefaultAwsRegionProviderChain()
     val credProv = new DefaultAWSCredentialsProviderChain()
 
-    S3(Credentials(
+    val creds = S3(Credentials(
       credProv.getCredentials.getAWSAccessKeyId,
       credProv.getCredentials.getAWSSecretKey
     ))(awscala.Region(regionProv.getRegion))
+
+    println("Found creds from default profile")
+    creds
   }.toOption
 
   private def readFromFile(path: Path): Option[S3] = {
@@ -127,7 +138,9 @@ class S3HandlerNotFactory extends URLStreamHandler {
           val region = credentials.get("region")
             .map(awscala.Region.apply)
             .getOrElse(awscala.Region.EU_WEST_1)
-          S3(Credentials(accessKey, secretKey))(region)
+          val creds = S3(Credentials(accessKey, secretKey))(region)
+          println(s"Found creds from $path")
+          creds
         }
       }
     } catch {
@@ -136,9 +149,7 @@ class S3HandlerNotFactory extends URLStreamHandler {
     } finally {
       sourceOpt.foreach(_.close())
     }
-
   }
-
 }
 
 class S3Handler extends URLStreamHandlerFactory {

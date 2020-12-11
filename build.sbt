@@ -4,7 +4,7 @@ organization := "rtfpessoa"
 
 name := """coursier-s3"""
 
-version := "0.4.0-SNAPSHOT"
+version := "0.6.0-SNAPSHOT"
 
 scalaVersion := "2.12.8"
 
