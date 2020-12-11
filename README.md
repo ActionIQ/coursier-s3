@@ -6,13 +6,14 @@ This fork uses standard `s3://` scheme unlike the original (which uses `s3c://`)
 
 ### Credentials
 
-* Environment
+* AWS
 
-```sh
-AWS_ACCESS_KEY_ID="myKey"
-AWS_SECRET_ACCESS_KEY="myVeryS3cret"
-AWS_DEFAULT_REGION="eu-east-1"
-```
+If you have an AWS profile called "artifacts", credentials will be read from there. Otherwise they will
+be read from the [default](https://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/auth/DefaultAWSCredentialsProviderChain.html)
+AWS chain.
+
+Region will be read from the [default](https://sdk.amazonaws.com/java/api/latest/software/amazon/awssdk/regions/providers/DefaultAwsRegionProviderChain.html)
+AWS chain.
 
 * File
 
@@ -28,6 +29,8 @@ region = eu-east-1
 ```
 
 ### Usage
+
+You'll need any version of `coursier`, which can then bootstrap and produce a new coursier jar.
 
 ```shell
 $ coursier bootstrap coursier:1.1.0-M14 rtfpessoa:coursier-s3_2.12:0.2.0-SNAPSHOT --assembly -o coursier-1.1.0-M14-s3.sh
